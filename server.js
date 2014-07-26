@@ -6,6 +6,7 @@ var express = require('express'),
 
 server.use(bodyParser.json());
 server.use(bodyParser.urlencoded({extended:true}));
+server.use(logger);
 server.use('/', express.static(staticRoot));
 
 server.post('/private',authenticate,function(q,r){
@@ -13,10 +14,9 @@ server.post('/private',authenticate,function(q,r){
 });
 
 server.post('/login',function(q,r){
-	console.log(q.body);
-	if (q.body.user.name == "guest@egusers.com" && q.body.user.password == "guest") {
+	if (q.body.user.name == "admin@egusers.com" && q.body.user.password == "admin") {
 		token = Math.random() + "";
-		r.send({user:{name:'guest@egusers.com',password:'guest',token:token},error:false});
+		r.send({user:{name:'admin@egusers.com',password:'admin',token:token},error:false});
 	} else {
 		r.send({error:true,message:"Not authorized."});
 	}
@@ -31,4 +31,14 @@ function authenticate (q,r,n) {
 	} else {
 		r.send({error:true,message:"Not authorized."});
 	}
+}
+
+function logger (q,r,n) {
+	console.log('\033[32m >>>\033[0m ' + JSON.stringify({
+		url: q.originalUrl,
+		params: q.params,
+		body: q.body,
+		query: q.query
+	}));
+	n();
 }

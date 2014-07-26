@@ -7,6 +7,9 @@ angular
 		$routeProvider.when('/login',{
 			templateUrl: 'views/login.html'
 		});
+		$routeProvider.when('/profile',{
+			templateUrl: 'views/profile.html'
+		});
 		$routeProvider.otherwise({redirectTo:'/home'});
 	}])
 	.directive('egNavigation',['$location',function($location){
@@ -30,7 +33,7 @@ angular
 		}
 	}])
 	.controller('IndexController',['$scope','UsersService',function($scope,UsersService){
-		$scope.user = $scope.user || {name:'Dr. User',password:'dr.user',token:Math.random()+''};
+		$scope.user = $scope.user || {name:'guest@egusers.com',password:'guest',token:Math.random()+''};
 		UsersService
 			.login($scope.user)
 			.success(handleUser)
@@ -48,7 +51,7 @@ angular
 			console.log(error);
 		}
 	}])
-	.controller('LoginController',['$scope','UsersService',function($scope,UsersService){
+	.controller('LoginController',['$scope','$location','UsersService',function($scope,$location,UsersService){
 		$scope.login = login;
 		function login () {
 			UsersService
@@ -60,6 +63,7 @@ angular
 				console.log(response);
 				if (!response.error) {
 					$scope.user = response.user;
+					$location.path('/profile');
 				} else {
 					// ...
 				}

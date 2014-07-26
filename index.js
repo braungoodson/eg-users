@@ -36,17 +36,17 @@ angular
 			return $http({method:'post',url:'/logout',data:{user:user}})
 		}
 	}])
-	.controller('IndexController',['$rootScope','UsersService',function($scope,UsersService){
-		$scope.user = $scope.user || {name:'guest@egusers.com',password:'guest',token:Math.random()+''};
+	.controller('IndexController',['$rootScope','UsersService',function($rootScope,UsersService){
+		$rootScope.user = $rootScope.user || {name:'guest@egusers.com',password:'guest',token:Math.random()+''};
 		UsersService
-			.login($scope.user)
+			.login($rootScope.user)
 			.success(handleUser)
 			.error(handleError)
 		;
 		function handleUser (response) {
 			console.log(response);
 			if (!response.error) {
-				$scope.user = response.user;
+				$rootScope.user = response.user;
 			} else {
 				// ...
 			}
@@ -55,18 +55,18 @@ angular
 			console.log(error);
 		}
 	}])
-	.controller('LoginController',['$rootScope','$location','UsersService',function($scope,$location,UsersService){
-		$scope.login = login;
+	.controller('LoginController',['$rootScope','$location','UsersService',function($rootScope,$location,UsersService){
+		$rootScope.login = login;
 		function login () {
 			UsersService
-				.login($scope.user)
+				.login($rootScope.user)
 				.success(handleUser)
 				.error(handleError)
 			;
 			function handleUser (response) {
 				console.log(response);
 				if (!response.error) {
-					$scope.user = response.user;
+					$rootScope.user = response.user;
 					$location.path('/profile');
 				} else {
 					// ...
@@ -77,18 +77,18 @@ angular
 			}
 		}
 	}])
-	.controller('LogoutController',['$rootScope','$location','UsersService',function($scope,$location,UsersService){
-		$scope.logout = logout;
+	.controller('LogoutController',['$rootScope','$location','UsersService',function($rootScope,$location,UsersService){
+		$rootScope.logout = logout;
 		function logout () {
 			UsersService
-				.logout($scope.user)
+				.logout($rootScope.user)
 				.success(handleLogout)
 				.error(handleError)
 			;
 			function handleLogout (response) {
 				console.log(response);
 				if (!response.error) {
-					$scope.user = {name:'guest@egusers.com',password:'guest',token:Math.random()+''};
+					$rootScope.user = {name:'guest@egusers.com',password:'guest',token:Math.random()+''};
 					$location.path('/home');
 				} else {
 					// ...

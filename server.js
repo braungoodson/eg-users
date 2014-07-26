@@ -4,34 +4,31 @@ var express = require('express'),
   port = process.env.PORT || 30000,
   staticRoot = __dirname;
 
+server.use(bodyParser.json());
 server.use(bodyParser.urlencoded({extended:true}));
 server.use('/', express.static(staticRoot));
 
 server.post('/private',authenticate,function(q,r){
-	r.send({message:"Authorized."});
+	r.send({error:false,message:"Authorized."});
 });
 
 server.post('/login',function(q,r){
-	if (q.body.username == "user" && q.body.password == "user") {
+	console.log(q.body);
+	if (q.body.user.name == "guest@egusers.com" && q.body.user.password == "guest") {
 		token = Math.random() + "";
-		r.send({token:token});
+		r.send({user:{name:'guest@egusers.com',password:'guest',token:token},error:false});
 	} else {
-		r.send({error:"Not authorized."});
+		r.send({error:true,message:"Not authorized."});
 	}
-});
-
-server.post('/logout',function(q,r){
-	q.session.authenticated = false;
-	r.redirect('/login');
 });
 
 server.listen(port);
 console.log('http://localhost:'+port);
 
 function authenticate (q,r,n) {
-	if (q.body.token == token) {
+	if (q.body.user.token == token) {
 		n();
 	} else {
-		r.send({error:"Not authorized."});
+		r.send({error:true,message:"Not authorized."});
 	}
 }

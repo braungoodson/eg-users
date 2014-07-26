@@ -9,7 +9,7 @@ server.use(bodyParser.urlencoded({extended:true}));
 server.use(logger);
 server.use('/', express.static(staticRoot));
 
-server.post('/private',authenticate,function(q,r){
+server.post('/profile',authenticate,function(q,r){
 	r.send({error:false,message:"Authorized."});
 });
 
@@ -20,6 +20,11 @@ server.post('/login',function(q,r){
 	} else {
 		r.send({error:true,message:"Not authorized."});
 	}
+});
+
+server.post('/logout',function(q,r){
+	token = Math.random();
+	r.send({error:false,message:"Logout successful."});
 });
 
 server.listen(port);

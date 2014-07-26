@@ -27,12 +27,16 @@ angular
 	.service('UsersService',['$q','$http',function($q,$http){
 		var service = {};
 		service.login = login;
+		service.logout = logout;
 		return service;
 		function login (user) {
 			return $http({method:'post',url:'/login',data:{user:user}});
 		}
+		function  logout (user) {
+			return $http({method:'post',url:'/logout',data:{user:user}})
+		}
 	}])
-	.controller('IndexController',['$scope','UsersService',function($scope,UsersService){
+	.controller('IndexController',['$rootScope','UsersService',function($scope,UsersService){
 		$scope.user = $scope.user || {name:'guest@egusers.com',password:'guest',token:Math.random()+''};
 		UsersService
 			.login($scope.user)
@@ -51,7 +55,7 @@ angular
 			console.log(error);
 		}
 	}])
-	.controller('LoginController',['$scope','$location','UsersService',function($scope,$location,UsersService){
+	.controller('LoginController',['$rootScope','$location','UsersService',function($scope,$location,UsersService){
 		$scope.login = login;
 		function login () {
 			UsersService
@@ -64,6 +68,28 @@ angular
 				if (!response.error) {
 					$scope.user = response.user;
 					$location.path('/profile');
+				} else {
+					// ...
+				}
+			}
+			function handleError (error) {
+				console.log(error);
+			}
+		}
+	}])
+	.controller('LogoutController',['$rootScope','$location','UsersService',function($scope,$location,UsersService){
+		$scope.logout = logout;
+		function logout () {
+			UsersService
+				.logout($scope.user)
+				.success(handleLogout)
+				.error(handleError)
+			;
+			function handleLogout (response) {
+				console.log(response);
+				if (!response.error) {
+					$scope.user = {name:'guest@egusers.com',password:'guest',token:Math.random()+''};
+					$location.path('/home');
 				} else {
 					// ...
 				}

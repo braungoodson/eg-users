@@ -1,4 +1,4 @@
-jta-template
+eg-users
 ======
 
 jquery, twitter, and angularjs template. with express server.

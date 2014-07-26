@@ -1,5 +1,5 @@
 {
-  "name": "jta-template",
+  "name": "eg-users",
   "version": "0.2.0",
   "description": "jquery, twitter, angularjs; template; +server(express);",
   "main": "index.js",
@@ -12,7 +12,8 @@
   "repository": "https://github.com/braungoodson/jta-template",
   "license": "MIT",
   "dependencies": {
-    "bower": "~1.2.8",
+    "body-parser": "^1.5.0",
+    "bower": "~1.3.8",
     "express": "~4.2.0"
   }
 }

@@ -1,7 +1,7 @@
 eg-users
 ======
 
-jquery, twitter, and angularjs template. with express server.
+Built with git, node, npm, express, bower, jquery, twitter, and angular.
 
 usage
 ======

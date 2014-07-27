@@ -10,6 +10,9 @@ angular
 		$routeProvider.when('/profile',{
 			templateUrl: 'views/profile.html'
 		});
+		$routeProvider.when('/signup',{
+			templateUrl: 'views/signup.html'
+		});
 		$routeProvider.otherwise({redirectTo:'/home'});
 	}])
 	.directive('egNavigation',['$location',function($location){
@@ -28,12 +31,16 @@ angular
 		var service = {};
 		service.login = login;
 		service.logout = logout;
+		service.signup = signup;
 		return service;
 		function login (user) {
 			return $http({method:'post',url:'/login',data:{user:user}});
 		}
 		function  logout (user) {
 			return $http({method:'post',url:'/logout',data:{user:user}})
+		}
+		function signup (user) {
+			return $http({method:'post',url:'/signup',data:{user:user}})
 		}
 	}])
 	.controller('IndexController',['$rootScope','UsersService',function($rootScope,UsersService){
@@ -90,6 +97,28 @@ angular
 				if (!response.error) {
 					$rootScope.user = {name:'guest@egusers.com',password:'guest',token:Math.random()+''};
 					$location.path('/home');
+				} else {
+					// ...
+				}
+			}
+			function handleError (error) {
+				console.log(error);
+			}
+		}
+	}])
+	.controller('SignupController',['$rootScope','$location','UsersService',function($rootScope,$location,UsersService){
+		$rootScope.signup = signup;
+		function signup () {
+			UsersService
+				.signup($rootScope.user)
+				.success(handleSignup)
+				.error(handleError)
+			;
+			function handleSignup (response) {
+				console.log(response);
+				if (!response.error) {
+					$rootScope.user = response.user;
+					$location.path('/login');
 				} else {
 					// ...
 				}

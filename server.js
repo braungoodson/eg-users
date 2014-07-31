@@ -61,80 +61,98 @@ server.post('/logout',authenticate,function(q,r){
 
 server.post('/signup',function(q,r){
 	var user = q.body.user;
-	user.existed = false;
-	user.query = {};
-	user.query.error = false;
-	user.query.ended = false;
-	maria
-		.query('select uname, upassword from users;')
-		.on('result',function(result){
-			result
-				.on('row',function(row){
-					user.existed = true;
-					user.query.error = true;
-				})
-				.on('error',function(error){
-					logger1(true,'error: '+error);
-					user.query.error = error;
-				})
-				.on('end',function(){
-					logger1(false,'end: result: select uname, upassword from users;')
-					user.query.ended = true;
-				})
-			;
-		})
-		.on('end',function(){
-			if (user.query.error) {
-				if (user.existed) {
-					r.send({error:true,message:'User already exists.'})
-				}
-				if (user.query.error) {
-					r.send({error:true,message:user.query.error})
-				}
-			}
-			if (!user.query.error) {
-				if (!user.existed) {
-					maria
-						.query('insert into users (uname,upassword) values ('+user.name+','+user.password+');')
-						.on('result',function(result){
-							result
-								.on('row',function(row){
-									user.name = row.uname;
-									user.password = row.upassword;
-									user.existed = false;
-									user.query.error = false;
-								})
-								.on('error',function(error){
-									logger1(true,'error: '+error);
-									user.query.error = error;
-								})
-								.on('end',function(){
-									logger1(false,'end: result: select uname, upassword from users;')
-									user.query.ended = true;
-								})
-							;
-						})
-						.on('end',function(){
+	if (user) {
+		if (user.name) {
+			if (user.name.length) {
+				user.existed = false;
+				user.query = {};
+				user.query.error = false;
+				user.query.ended = false;
+				maria
+					.query('select uname, upassword from users;')
+					.on('result',function(result){
+						result
+							.on('row',function(row){
+								user.existed = true;
+								user.query.error = true;
+							})
+							.on('error',function(error){
+								logger1(true,'error: '+error);
+								user.query.error = error;
+							})
+							.on('end',function(){
+								logger1(false,'end: result: select uname, upassword from users;')
+								user.query.ended = true;
+							})
+						;
+					})
+					.on('end',function(){
+						if (user.query.error) {
+							if (user.existed) {
+								r.send({error:true,message:'User already exists.'})
+							}
 							if (user.query.error) {
-								if (user.existed) {
-									r.send({error:true,message:'User already exists.'})
-								}
-								if (user.query.error) {
-									r.send({error:true,message:user.query.error})
-								}
+								r.send({error:true,message:user.query.error})
 							}
-							if (!user.query.error) {
-								if (!user.existed) {
-									r.send({error:false,user:user});
-								}
+						}
+						if (!user.query.error) {
+							if (!user.existed) {
+								maria
+									.query('insert into users (uname,upassword) values ('+user.name+','+user.password+');')
+									.on('result',function(result){
+										result
+											.on('row',function(row){
+												user.name = row.uname;
+												user.password = row.upassword;
+												user.existed = false;
+												user.query.error = false;
+											})
+											.on('error',function(error){
+												logger1(true,'error: '+error);
+												user.query.error = error;
+											})
+											.on('end',function(){
+												logger1(false,'end: result: select uname, upassword from users;')
+												user.query.ended = true;
+											})
+										;
+									})
+									.on('end',function(){
+										if (user.query.error) {
+											if (user.existed) {
+												r.send({error:true,message:'User already exists.'})
+											}
+											if (user.query.error) {
+												r.send({error:true,message:user.query.error})
+											}
+										}
+										if (!user.query.error) {
+											if (!user.existed) {
+												r.send({error:false,user:user});
+											}
+										}
+									})
+								;
 							}
-						})
-					;
-				}
+						}
+						logger1(false,'end: select uname, upassword from users;');
+					})
+				;
 			}
-			logger1(false,'end: select uname, upassword from users;');
-		})
-	;
+		}
+	}
+	if (!user) {
+		logger1(true,'error: empty POST');
+		r.send({error:true,message:'Must provide POST data.'});
+	}
+	if (!user.name) {
+		logger1(true,'error: empty user.name');
+		r.send({error:true,message:'Must provide user.name POST data.'});	
+	}
+	if (!user.name.length) {
+		logger1(true,'error: empty user.name');
+		r.send({error:true,message:'Must provide user.name POST data.'});
+	}
 });
 
 server.listen(port);

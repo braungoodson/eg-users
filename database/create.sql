@@ -8,8 +8,8 @@ create table if not exists users (
 	upassword varchar(64) not null
 );
 
-create user 'eg-users-db-user'@'localhost' identified by 'eg-users-db-user';
+create user 'egusersdbuser'@'localhost' identified by 'egusersdbuser';
 
-grant all privileges on eg_users.* to 'eg-users-db-user'@'localhost';
+grant all privileges on eg_users.* to 'egusersdbuser'@'localhost';
 
-insert into eg_users (uname,upassword) values ('administrator','administrator');
+insert into users (uname,upassword) values ('administrator','administrator');

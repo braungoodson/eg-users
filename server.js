@@ -1,13 +1,32 @@
 var express = require('express'),
   bodyParser = require('body-parser'),
+  crypto = require('crypto'),
+  mariasql = require('mariasql'),
   server = express(),
+  maria = new mariasql(),
   port = process.env.PORT || 30000,
   staticRoot = __dirname,
-  crypto = require('crypto'),
   users = [];
 
+// -- legacy
 users.find = find;
 users.push({name:'admin@egusers.com',password:'admin',token:null});
+// -- 
+
+maria.connect({
+    host: 'localhost',
+    user: 'eg-users-db-user',
+    password: 'eg-users-db-user',
+    db: 'eg_users'
+});
+
+maria.on('connect', function() {
+    logger1(false,'connected to maria');
+}).on('error', function(e) {
+    logger1(true,'error: maria: ' + e);
+}).on('close', function(c) {
+    logger1(true,'warning: maria: closed: ' + c);
+});
 
 server.use(bodyParser.json());
 server.use(bodyParser.urlencoded({extended:true}));
@@ -42,17 +61,86 @@ server.post('/logout',authenticate,function(q,r){
 
 server.post('/signup',function(q,r){
 	var user = q.body.user;
-	var u = null;
-	if (u = users.find(user)) {
-		r.send({error:true,message:"User already exists."});
-	} else {
-		users.push(user);
-		r.send({error:false,user:user});
-	}
+	user.existed = false;
+	user.query = {};
+	user.query.error = false;
+	user.query.ended = false;
+	maria
+		.query('select uname, upassword from users;')
+		.on('result',function(result){
+			result
+				.on('row',function(row){
+					user.existed = true;
+					user.query.error = true;
+				})
+				.on('error',function(error){
+					logger1(true,'error: '+error);
+					user.query.error = error;
+				})
+				.on('end',function(){
+					logger1(false,'end: result: select uname, upassword from users;')
+					user.query.ended = true;
+				})
+			;
+		})
+		.on('end',function(){
+			if (user.query.error) {
+				if (user.existed) {
+					r.send({error:true,message:'User already exists.'})
+				}
+				if (user.query.error) {
+					r.send({error:true,message:user.query.error})
+				}
+			}
+			if (!user.query.error) {
+				if (!user.existed) {
+					maria
+						.query('insert into users (uname,upassword) values ('+user.name+','+user.password+');')
+						.on('result',function(result){
+							result
+								.on('row',function(row){
+									user.name = row.uname;
+									user.password = row.upassword;
+									user.existed = false;
+									user.query.error = false;
+								})
+								.on('error',function(error){
+									logger1(true,'error: '+error);
+									user.query.error = error;
+								})
+								.on('end',function(){
+									logger1(false,'end: result: select uname, upassword from users;')
+									user.query.ended = true;
+								})
+							;
+						})
+						.on('end',function(){
+							if (user.query.error) {
+								if (user.existed) {
+									r.send({error:true,message:'User already exists.'})
+								}
+								if (user.query.error) {
+									r.send({error:true,message:user.query.error})
+								}
+							}
+							if (!user.query.error) {
+								if (!user.existed) {
+									r.send({error:false,user:user});
+								}
+							}
+						})
+					;
+				}
+			}
+			logger1(false,'end: select uname, upassword from users;');
+		})
+	;
 });
 
 server.listen(port);
-console.log('http://localhost:'+port);
+logger1(false,'http://localhost:'+port);
+
+
 
 function authenticate (q,r,n) {
 	var user = q.body.user;
@@ -76,6 +164,14 @@ function logger (q,r,n) {
 		query: q.query
 	}));
 	n();
+}
+
+function logger1 (e,l) {
+	if (e) {
+		console.log('\033[31m >>>\033[0m ' + l);
+	} else {
+	console.log('\033[32m >>>\033[0m ' + l);
+	}
 }
 
 function find (user) {

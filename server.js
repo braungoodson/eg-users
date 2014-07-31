@@ -3,6 +3,7 @@ var express = require('express'),
   server = express(),
   port = process.env.PORT || 30000,
   staticRoot = __dirname,
+  crypto = require('crypto'),
   users = [];
 
 users.find = find;
@@ -22,7 +23,7 @@ server.post('/login',function(q,r){
 	var u = null;
 	if (u = users.find(user)) {
 		if (u.password == user.password) {
-			u.token = Math.random() + "";
+			u.token = Token();
 			r.send({user:u,error:false});
 		} else {
 			r.send({error:true,message:"Incorrect password"});
@@ -35,7 +36,7 @@ server.post('/login',function(q,r){
 server.post('/logout',authenticate,function(q,r){
 	var user = q.body.user;
 	var u = users.find(user);
-	u.token = Math.random();
+	u.token = Token();
 	r.send({error:false,message:"Logout successful."});
 });
 
@@ -84,4 +85,14 @@ function find (user) {
 		}
 	}
 	return false;
+}
+
+function Token () {
+	var variance = new Date().getTime().toString();
+	var token = crypto
+		.createHash('sha1')
+		.update(variance)
+		.digest('hex')
+	;
+	return token;
 }
